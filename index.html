@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <title>日本の小説の規則で文を直す</title>
+
+        <!-- Public Domain -->
+
+    </head>
+    <body>
+        <div>
+            <textarea id="originalText" cols="80" rows="10" placeholder="日本の小説の書き方の規則(ルール)で直したい文をここに記入してください。"></textarea>
+        </div>
+        <br />
+        <div>
+            <input type="checkbox" id="toKanjiNumerals" checked="checked" />半角数字と全角数字を漢数字に置換
+        </div>
+        <br />
+        <div>
+            <input type="checkbox" id="toFullWidthAlphabet" checked="checked" />半角英字を全角英字に置換
+        </div>
+        <br />
+        <div>
+            <button type="button" id="format">日本の小説の規則(ルール)で文を直す</button>
+        </div>
+        <br />
+        <div>
+            <textarea id="formattedText" cols="80" rows="10" placeholder="日本の小説の書き方の規則(ルール)で直された文がここに書き込まれます。"></textarea>
+        </div>
+        <div>
+            <button type="button" id="copy">クリップボードにコピーする</button>
+        </div>
+        <br />
+        <br />
+        <div>
+            <button type="button" id="clear">文を消去する</button>
+        </div>
+        <br />
+        <br />
+        <p>　各行の最初が1文字以上の全角空白や半角空白の連続の場合は1文字だけの全角空白の字下げに置換します。</p>
+        <br />
+        <p>　各行の最後が1文字以上の全角空白や半角空白の連続の場合は除去します。</p>
+        <br />
+        <p>　各行の最初の文字が全角空白でも「でもない場合は全角空白で字下げします。</p>
+        <br />
+        <br />
+        <p>　1つだけの…を2つの……に置換します。</p>
+        <p>　3つだけの………を4つの…………に置換します。</p>
+        <p>　5つだけの……………を6つの………………に置換します。</p>
+        <br />
+        <p>　ただし、7つ以上の奇数の…………………などは、偶数に置換しても、奇数と偶数を見分けるのが困難なので、置換しません。</p>
+        <br />
+        <br />
+        <p>　1つだけの―を2つの――に置換します。</p>
+        <p>　3つだけの―――を4つの――――に置換します。</p>
+        <p>　5つだけの―――――を6つの――――――に置換します。</p>
+        <br />
+        <p>　ただし、7つ以上の奇数の―――――――などは、偶数に置換しても、奇数と偶数を見分けるのが困難なので、置換しません。</p>
+        <br />
+        <br />
+        <p>　半角英字を全角英字に置換します。</p>
+        <br />
+        <p>　ただし、チェックを外せば、半角英字を全角英字に置換しません。</p>
+        <br />
+        <br />
+        <p>　半角数字と全角数字を漢数字に置換します。</p>
+        <br />
+        <p>　ただし、千垓の十倍以上の数の場合は、〇から九までの漢数字の羅列に置換します。</p>
+        <br />
+        <p>　ただし、1文字だけの半角数字ゼロ(0)や全角数字ゼロ(０)を零に置換します。</p>
+        <br />
+        <p>　ただし、チェックを外せば、半角数字と全角数字を漢数字に置換しません。</p>
+        <br />
+        <br />
+        <p>　会話文の、改行の後の半角空白か全角空白の連続と、改行を除去します。</p>
+        <br />
+        <br />
+        <p>　会話文の後に地の文が繋がっていて混在している文は、全角空白で字下げします。</p>
+        <br />
+        <br />
+        <p>　。」を」に置換します。</p>
+        <br />
+        <br />
+        <p>　」の前の1文字以上の半角空白や全角空白の連続を除去します。</p>
+        <br />
+        <br />
+        <p>　全角の？か全角の！の次が全角空白でも」でも改行でもない場合は全角空白を挿入します。</p>
+        <br />
+        <br />
+        <p>　。の後の半角空白や全角空白の連続を除去します。</p>
+
+
+        <script>
+
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+
+//正規表現の特殊文字をエスケープ
+function escapeRegExp(string) {
+    if (string == null) {
+        return string;
+    }
+    if (string == "") {
+        return string;
+    }
+
+    string = string.replaceAll(/\\/g, "\\\\");
+    string = string.replaceAll(/\./g, "\\.");
+    string = string.replaceAll(/\?/g, "\\?");
+    string = string.replaceAll(/\*/g, "\\*");
+    string = string.replaceAll(/\+/g, "\\+");
+    string = string.replaceAll(/\{/g, "\\{");
+    string = string.replaceAll(/\}/g, "\\}");
+    string = string.replaceAll(/\^/g, "\\^");
+    string = string.replaceAll(/\$/g, "\\$");
+    string = string.replaceAll(/\[/g, "\\[");
+    string = string.replaceAll(/\]/g, "\\]");
+    string = string.replaceAll(/\|/g, "\\|");
+    string = string.replaceAll(/\(/g, "\\(");
+    string = string.replaceAll(/\)/g, "\\)");
+
+    return string;
+}
+
+
+//半角英字を全角英字に置換
+function toFullWidthAlphabet(string) {
+    if (string == null) {
+        return string;
+    }
+    if (string == "") {
+        return string;
+    }
+
+    //半角英小文字を全角英小文字に置換
+    string = string.replaceAll(/a/g, "ａ");
+    string = string.replaceAll(/b/g, "ｂ");
+    string = string.replaceAll(/c/g, "ｃ");
+    string = string.replaceAll(/d/g, "ｄ");
+    string = string.replaceAll(/e/g, "ｅ");
+    string = string.replaceAll(/f/g, "ｆ");
+    string = string.replaceAll(/g/g, "ｇ");
+    string = string.replaceAll(/h/g, "ｈ");
+    string = string.replaceAll(/i/g, "ｉ");
+    string = string.replaceAll(/j/g, "ｊ");
+    string = string.replaceAll(/k/g, "ｋ");
+    string = string.replaceAll(/l/g, "ｌ");
+    string = string.replaceAll(/m/g, "ｍ");
+    string = string.replaceAll(/n/g, "ｎ");
+    string = string.replaceAll(/o/g, "ｏ");
+    string = string.replaceAll(/p/g, "ｐ");
+    string = string.replaceAll(/q/g, "ｑ");
+    string = string.replaceAll(/r/g, "ｒ");
+    string = string.replaceAll(/s/g, "ｓ");
+    string = string.replaceAll(/t/g, "ｔ");
+    string = string.replaceAll(/u/g, "ｕ");
+    string = string.replaceAll(/v/g, "ｖ");
+    string = string.replaceAll(/w/g, "ｗ");
+    string = string.replaceAll(/x/g, "ｘ");
+    string = string.replaceAll(/y/g, "ｙ");
+    string = string.replaceAll(/z/g, "ｚ");
+
+    //半角英大文字を全角英大文字に置換
+    string = string.replaceAll(/A/g, "Ａ");
+    string = string.replaceAll(/B/g, "Ｂ");
+    string = string.replaceAll(/C/g, "Ｃ");
+    string = string.replaceAll(/D/g, "Ｄ");
+    string = string.replaceAll(/E/g, "Ｅ");
+    string = string.replaceAll(/F/g, "Ｆ");
+    string = string.replaceAll(/G/g, "Ｇ");
+    string = string.replaceAll(/H/g, "Ｈ");
+    string = string.replaceAll(/I/g, "Ｉ");
+    string = string.replaceAll(/J/g, "Ｊ");
+    string = string.replaceAll(/K/g, "Ｋ");
+    string = string.replaceAll(/L/g, "Ｌ");
+    string = string.replaceAll(/M/g, "Ｍ");
+    string = string.replaceAll(/N/g, "Ｎ");
+    string = string.replaceAll(/O/g, "Ｏ");
+    string = string.replaceAll(/P/g, "Ｐ");
+    string = string.replaceAll(/Q/g, "Ｑ");
+    string = string.replaceAll(/R/g, "Ｒ");
+    string = string.replaceAll(/S/g, "Ｓ");
+    string = string.replaceAll(/T/g, "Ｔ");
+    string = string.replaceAll(/U/g, "Ｕ");
+    string = string.replaceAll(/V/g, "Ｖ");
+    string = string.replaceAll(/W/g, "Ｗ");
+    string = string.replaceAll(/X/g, "Ｘ");
+    string = string.replaceAll(/Y/g, "Ｙ");
+    string = string.replaceAll(/Z/g, "Ｚ");
+
+    return string;
+}
+
+
+
+
+function toSingleKanjiNumerals(string) {
+    if (string == null) {
+        return string;
+    }
+    if (string == "") {
+        return string;
+    }
+
+    string = string.replaceAll(/0/g, "〇");
+    string = string.replaceAll(/1/g, "一");
+    string = string.replaceAll(/2/g, "二");
+    string = string.replaceAll(/3/g, "三");
+    string = string.replaceAll(/4/g, "四");
+    string = string.replaceAll(/5/g, "五");
+    string = string.replaceAll(/6/g, "六");
+    string = string.replaceAll(/7/g, "七");
+    string = string.replaceAll(/8/g, "八");
+    string = string.replaceAll(/9/g, "九");
+
+    return string;
+}
+
+
+//半角数字と全角数字を漢数字に置換
+//
+//ただし、千垓の十倍以上の数の場合は、零から九までの漢数字の羅列に置換
+//
+function toKanjiNumerals(string) {
+    if (string == null) {
+        return string;
+    }
+    if (string == "") {
+        return string;
+    }
+
+    //全角数字を半角数字に置換して、半角数字だけに統一
+    string = string.replaceAll(/０/g, "0");
+    string = string.replaceAll(/１/g, "1");
+    string = string.replaceAll(/２/g, "2");
+    string = string.replaceAll(/３/g, "3");
+    string = string.replaceAll(/４/g, "4");
+    string = string.replaceAll(/５/g, "5");
+    string = string.replaceAll(/６/g, "6");
+    string = string.replaceAll(/７/g, "7");
+    string = string.replaceAll(/８/g, "8");
+    string = string.replaceAll(/９/g, "9");
+
+    //半角数字の1文字以上の連続を抽出
+    var numericsArray = string.match(/[0-9]+/g);
+
+    //半角数字の1文字以上の連続が無い場合
+    if (numericsArray == null) {
+        return string;
+    }
+
+    //二重置換を予防するため、文字数が大きい数字から小さい数字へ並べます。
+    var compare = function (a, b) {
+        return b.length - a.length;
+    };
+    numericsArray.sort(compare);
+
+    var kanjiNumeralsArray = [];
+
+    for (var index = 0; index < numericsArray.length; index++) {
+        var numerics = numericsArray[index];
+
+        var numericsLength = numerics.length;
+
+        var kanjiNumerals = "";
+
+        //千垓の十倍以上の数の場合
+        if (25 <= numericsLength) {
+            //〇から九までの漢数字の羅列に置換
+            for (var i = 0; i < numericsLength; i++) {
+                kanjiNumerals = kanjiNumerals + toSingleKanjiNumerals(numerics.charAt(i));
+            }
+            kanjiNumeralsArray.push(kanjiNumerals);
+            continue;
+        }
+
+        for (var i = 0; i < numericsLength; i++) {
+            kanjiNumerals = kanjiNumerals + toSingleKanjiNumerals(numerics.charAt(i));
+            switch (numericsLength - i) {
+                case 24:
+                case 20:
+                case 16:
+                case 12:
+                case 8:
+                case 4:
+                    kanjiNumerals = kanjiNumerals + "千";
+                    break;
+                case 23:
+                case 19:
+                case 15:
+                case 11:
+                case 7:
+                case 3:
+                    kanjiNumerals = kanjiNumerals + "百";
+                    break;
+                case 22:
+                case 18:
+                case 14:
+                case 10:
+                case 6:
+                case 2:
+                    kanjiNumerals = kanjiNumerals + "十";
+                    break;
+                case 21:
+                    kanjiNumerals = kanjiNumerals + "垓";
+                    break;
+                case 17:
+                    kanjiNumerals = kanjiNumerals + "京";
+                    break;
+                case 13:
+                    kanjiNumerals = kanjiNumerals + "兆";
+                    break;
+                case 9:
+                    kanjiNumerals = kanjiNumerals + "億";
+                    break;
+                case 5:
+                    kanjiNumerals = kanjiNumerals + "万";
+                    break;
+                default:
+            }
+        }
+
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇[千百十]/g, "");
+        kanjiNumerals = kanjiNumerals.replaceAll(/^〇垓/g, "");
+        kanjiNumerals = kanjiNumerals.replaceAll(/^〇京/g, "");
+        kanjiNumerals = kanjiNumerals.replaceAll(/^〇兆/g, "");
+        kanjiNumerals = kanjiNumerals.replaceAll(/^〇億/g, "");
+        kanjiNumerals = kanjiNumerals.replaceAll(/^〇万/g, "");
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇垓/g, "垓");
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇京/g, "京");
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇兆/g, "兆");
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇億/g, "億");
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇万/g, "万");
+        kanjiNumerals = kanjiNumerals.replaceAll(/^〇$/g, "零");
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇$/g, "");
+
+        kanjiNumerals = kanjiNumerals.replaceAll(/一([千百十])/g, "$1");
+
+        kanjiNumeralsArray.push(kanjiNumerals);
+    }
+
+    for (var index = 0; index < numericsArray.length; index++) {
+        var numerics = numericsArray[index];
+
+        var kanjiNumerals = kanjiNumeralsArray[index];
+
+        string = string.replaceAll(new RegExp(numerics, "g"), kanjiNumerals);
+    }
+
+    return string;
+}
+
+
+
+
+$("format").onclick = function () {
+
+    var text = $("originalText").value;
+
+    var formattingLineArray = [];
+
+    text = text.replaceAll(/\r\n/g, "\n");
+    text = text.replaceAll(/\r/g, "\n");
+    var lineArray = text.split("\n");
+    for (var i = 0; i < lineArray.length; i++) {
+        var line = lineArray[i];
+
+
+        //各行の最初が1文字以上の全角空白や半角空白の連続の場合は1文字だけの全角空白の字下げに置換
+        line = line.replaceAll(/^[　 ]+/g, "　");
+
+
+        //各行の最後が1文字以上の全角空白や半角空白の連続の場合は除去
+        line = line.replaceAll(/[　 ]+$/g, "");
+
+
+        //各行の最初の文字が全角空白でも「でもない場合は全角空白で字下げ
+        line = line.replaceAll(/^([^　「])/g, "　$1");
+
+
+        //奇数の…を偶数の……に置換
+
+        //1つだけの…を2つの……に置換
+        line = line.replaceAll(/([^…])…$/g, "$1……");
+        line = line.replaceAll(/([^…])…([^…])/g, "$1……$2");
+
+        //3つだけの………を4つの…………に置換
+        line = line.replaceAll(/([^…])………$/g, "$1…………");
+        line = line.replaceAll(/([^…])………([^…])/g, "$1…………$2");
+
+        //5つだけの……………を6つの………………に置換
+        line = line.replaceAll(/([^…])……………$/g, "$1………………");
+        line = line.replaceAll(/([^…])……………([^…])/g, "$1………………$2");
+
+
+        //奇数の全角ダッシュ記号(―)を偶数の全角ダッシュ記号(――)に置換
+
+        //1つだけの―を2つの――に置換
+        line = line.replaceAll(/([^―])―$/g, "$1――");
+        line = line.replaceAll(/([^―])―([^―])/g, "$1――$2");
+
+        //3つだけの―――を4つの――――に置換
+        line = line.replaceAll(/([^―])―――$/g, "$1――――");
+        line = line.replaceAll(/([^―])―――([^―])/g, "$1――――$2");
+
+        //5つだけの―――――を6つの――――――に置換
+        line = line.replaceAll(/([^―])―――――$/g, "$1――――――");
+        line = line.replaceAll(/([^―])―――――([^―])/g, "$1――――――$2");
+
+
+        if ($("toFullWidthAlphabet").checked) {
+
+            //半角英字を全角英字に置換
+            line = toFullWidthAlphabet(line);
+        }
+
+
+        if ($("toKanjiNumerals").checked) {
+
+            //半角数字と全角数字を漢数字に置換
+            line = toKanjiNumerals(line);
+        }
+
+
+        formattingLineArray.push(line);
+    }
+    var formattingText = formattingLineArray.join("\n");
+
+
+    //会話文を抽出
+    //
+    //「から」までを抽出
+    //
+    var dialogArray = formattingText.match(/「[^」]*」/g);
+    //会話文が存在する場合
+    if (dialogArray != null) {
+        //会話文の数だけ、くり返し
+        for (var index = 0; index < dialogArray.length; index++) {
+            var dialog = dialogArray[index];
+
+            //会話文の、改行の後の半角空白か全角空白の連続と、改行を除去
+            formattingText = formattingText.replaceAll(new RegExp(escapeRegExp(dialog), "g"), dialog.replaceAll(/[\r\n][ 　]+/g, "").replaceAll(/[\r\n]/g, ""));
+        }
+    }
+
+
+    //会話文の後に地の文が繋がっていて混在している文を抽出
+    var dialogAndDescriptionArray = formattingText.match(/[\r\n]「[^」]*」[^\r\n]+[\r\n]/g);
+    //会話文の後に地の文が繋がっていて混在している文が存在する場合
+    if (dialogAndDescriptionArray != null) {
+        //会話文の後に地の文が繋がっていて混在している文の数だけ、くり返し
+        for (var index = 0; index < dialogAndDescriptionArray.length; index++) {
+            var dialogAndDescription = dialogAndDescriptionArray[index];
+
+            //会話文の後に地の文が繋がっていて混在している文は、全角空白で字下げ
+            formattingText = formattingText.replaceAll(new RegExp(escapeRegExp(dialogAndDescription), "g"), dialogAndDescription.replaceAll(/([\r\n])「/g, "$1　「"));
+        }
+    }
+
+
+    //。」を」に置換
+    formattingText = formattingText.replaceAll(/。」/g, "」");
+
+
+    //」の前の1文字以上の半角空白や全角空白の連続を除去
+    formattingText = formattingText.replaceAll(/[ 　]+」/g, "」");
+
+
+    //全角の？か全角の！の次が全角空白でも」でも改行でもない場合は全角空白を挿入
+    formattingText = formattingText.replaceAll(/([？！])([^　」\r\n])/g, "$1　$2");
+
+
+    //。の後の半角空白や全角空白の連続を除去
+    formattingText = formattingText.replaceAll(/。[ 　]/g, "。");
+
+
+    $("formattedText").value = formattingText;
+};
+
+
+$("copy").onclick = function () {
+    navigator.clipboard.writeText($("formattedText").value);
+};
+
+
+$("clear").onclick = function () {
+    $("originalText").value = "";
+    $("formattedText").value = "";
+};
+
+
+        </script>
+    </body>
+</html>
