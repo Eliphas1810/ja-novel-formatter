@@ -449,7 +449,8 @@ $("format").onclick = function () {
 
 
     //会話文の後に地の文が繋がっていて混在している文を抽出
-    var dialogAndDescriptionArray = formattingText.match(/[\r\n]「[^」]*」[^\r\n]+[\r\n]/g);
+
+    var dialogAndDescriptionArray = formattingText.match(/[\r\n]「[^」]*」[^\r\n]+|^「[^」]*」[^\r\n]+/g);
     //会話文の後に地の文が繋がっていて混在している文が存在する場合
     if (dialogAndDescriptionArray != null) {
         //会話文の後に地の文が繋がっていて混在している文の数だけ、くり返し
@@ -457,7 +458,7 @@ $("format").onclick = function () {
             var dialogAndDescription = dialogAndDescriptionArray[index];
 
             //会話文の後に地の文が繋がっていて混在している文は、全角空白で字下げ
-            formattingText = formattingText.replaceAll(new RegExp(escapeRegExp(dialogAndDescription), "g"), dialogAndDescription.replaceAll(/([\r\n])「/g, "$1　「"));
+            formattingText = formattingText.replaceAll(new RegExp(escapeRegExp(dialogAndDescription), "g"), dialogAndDescription.replaceAll(/^([\r\n]?)「/g, "$1　「"));
         }
     }
 
