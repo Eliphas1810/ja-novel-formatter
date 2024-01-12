@@ -65,9 +65,13 @@
         <br />
         <p>　半角数字と全角数字を漢数字に置換します。</p>
         <br />
-        <p>　ただし、千垓の十倍以上の数の場合は、〇から九までの漢数字の羅列に置換します。</p>
+        <p>　ただし、千垓の十倍以上の数に相当する25文字以上の数字の場合は、〇から九までの漢数字の羅列に置換します。</p>
+        <br />
+        <p>　ただし、2文字以上の数字で第1文字目が半角数字のゼロ(0)か全角数字のゼロ(０)の場合は、〇から九までの漢数字の羅列に置換します。</p>
         <br />
         <p>　ただし、1文字だけの半角数字ゼロ(0)や全角数字ゼロ(０)を零に置換します。</p>
+        <br />
+        <p>　半角数字と全角数字を漢数字に置換してから、例えば、「零.五」のような、「零.」を「〇．」に更に置換します。</p>
         <br />
         <p>　ただし、チェックを外せば、半角数字と全角数字を漢数字に置換しません。</p>
         <br />
@@ -89,6 +93,11 @@
         <br />
         <br />
         <p>　。の後の半角空白や全角空白の連続を除去します。</p>
+        <br />
+        <br />
+        <p>　、改行の後の半角空白や全角空白の連続を除去します。</p>
+
+
 
 
         <script>
@@ -223,7 +232,7 @@ function toSingleKanjiNumerals(string) {
 
 //半角数字と全角数字を漢数字に置換
 //
-//ただし、千垓の十倍以上の数の場合は、零から九までの漢数字の羅列に置換
+//ただし、千垓の十倍以上の数に相当する25文字以上の数字の場合は、漢数字ゼロ(〇)から九までの漢数字の羅列に置換
 //
 function toKanjiNumerals(string) {
     if (string == null) {
@@ -253,7 +262,7 @@ function toKanjiNumerals(string) {
         return string;
     }
 
-    //二重置換を予防するため、文字数が大きい数字から小さい数字へ並べます。
+    //置換の重複を予防するため、文字数が大きい数字から小さい数字へ並べます。
     var compare = function (a, b) {
         return b.length - a.length;
     };
@@ -268,8 +277,11 @@ function toKanjiNumerals(string) {
 
         var kanjiNumerals = "";
 
-        //千垓の十倍以上の数の場合
-        if (25 <= numericsLength) {
+        //千垓の十倍以上の数に相当する25文字以上の数字の場合、
+        //または、
+        //2文字以上の数字で第1文字目が半角数字のゼロ(0)の場合
+        //
+        if (25 <= numericsLength || (2 <= numericsLength && numerics.startsWith("0"))) {
             //〇から九までの漢数字の羅列に置換
             for (var i = 0; i < numericsLength; i++) {
                 kanjiNumerals = kanjiNumerals + toSingleKanjiNumerals(numerics.charAt(i));
@@ -321,22 +333,27 @@ function toKanjiNumerals(string) {
                     kanjiNumerals = kanjiNumerals + "万";
                     break;
                 default:
+                    break;
             }
         }
 
         kanjiNumerals = kanjiNumerals.replaceAll(/〇[千百十]/g, "");
-        kanjiNumerals = kanjiNumerals.replaceAll(/^〇垓/g, "");
-        kanjiNumerals = kanjiNumerals.replaceAll(/^〇京/g, "");
-        kanjiNumerals = kanjiNumerals.replaceAll(/^〇兆/g, "");
-        kanjiNumerals = kanjiNumerals.replaceAll(/^〇億/g, "");
-        kanjiNumerals = kanjiNumerals.replaceAll(/^〇万/g, "");
+
+        kanjiNumerals = kanjiNumerals.replaceAll(/^〇[垓京兆億万]/g, "");
+
         kanjiNumerals = kanjiNumerals.replaceAll(/〇垓/g, "垓");
         kanjiNumerals = kanjiNumerals.replaceAll(/〇京/g, "京");
         kanjiNumerals = kanjiNumerals.replaceAll(/〇兆/g, "兆");
         kanjiNumerals = kanjiNumerals.replaceAll(/〇億/g, "億");
         kanjiNumerals = kanjiNumerals.replaceAll(/〇万/g, "万");
+
         kanjiNumerals = kanjiNumerals.replaceAll(/^〇$/g, "零");
         kanjiNumerals = kanjiNumerals.replaceAll(/〇$/g, "");
+
+        kanjiNumerals = kanjiNumerals.replaceAll(/垓[京兆億万]+/g, "垓");
+        kanjiNumerals = kanjiNumerals.replaceAll(/京[兆億万]+/g, "京");
+        kanjiNumerals = kanjiNumerals.replaceAll(/兆[億万]+/g, "兆");
+        kanjiNumerals = kanjiNumerals.replaceAll(/億万/g, "億");
 
         kanjiNumerals = kanjiNumerals.replaceAll(/一([千百十])/g, "$1");
 
@@ -477,7 +494,15 @@ $("format").onclick = function () {
 
 
     //。の後の半角空白や全角空白の連続を除去
-    formattingText = formattingText.replaceAll(/。[ 　]/g, "。");
+    formattingText = formattingText.replaceAll(/。[ 　]+/g, "。");
+
+
+    //、改行の後の半角空白や全角空白の連続を除去
+    formattingText = formattingText.replaceAll(/(、\n)[ 　]+/g, "$1");
+
+
+    //零.を〇．に置換
+    formattingText = formattingText.replaceAll(/零\./g, "〇．");
 
 
     $("formattedText").value = formattingText;
