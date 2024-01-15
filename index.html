@@ -13,7 +13,11 @@
         </div>
         <br />
         <div>
-            <input type="checkbox" id="toKanjiNumerals" checked="checked" />半角数字と全角数字を漢数字に置換
+            <input type="checkbox" id="toKanjiNumerals" checked="checked" />半角数字と全角数字を漢数字に置換。半角ドット(.)を全角ドット(．)に置換。
+        </div>
+        <br />
+        <div>
+            <input type="checkbox" id="toFullWidthNumerics" />半角数字を全角数字に置換。半角ドット(.)を全角ドット(．)に置換。
         </div>
         <br />
         <div>
@@ -35,6 +39,15 @@
         <div>
             <button type="button" id="clear">文を消去する</button>
         </div>
+        <br />
+        <br />
+        <p>　不具合が有るかもしれないので、利用は自己責任で御願いいたします。</p>
+        <br />
+        <br />
+        <p>　読点(、)や句点(。)の後以外で改行している場合は正しく整形できません。</p>
+        <br />
+        <br />
+        <p>　整形後、目視で自分で見直してください。</p>
         <br />
         <br />
         <p>　各行の最初が1文字以上の全角空白や半角空白の連続の場合は1文字だけの全角空白の字下げに置換します。</p>
@@ -63,17 +76,24 @@
         <p>　ただし、チェックを外せば、半角英字を全角英字に置換しません。</p>
         <br />
         <br />
+        <p>　半角数字を全角数字に置換します。</p>
+        <br />
+        <p>　半角ドット(.)を全角ドット(．)に置換します。</p>
+        <br />
+        <p>　ただし、チェックを外せば、半角数字を全角数字に置換しませんし、半角ドット(.)を全角ドット(．)に置換しません。</p>
+        <br />
+        <br />
         <p>　半角数字と全角数字を漢数字に置換します。</p>
         <br />
-        <p>　ただし、千垓の十倍以上の数に相当する25文字以上の数字の場合は、〇から九までの漢数字の羅列に置換します。</p>
+        <p>　半角ドット(.)を全角ドット(．)に置換します。</p>
         <br />
-        <p>　ただし、2文字以上の数字で第1文字目が半角数字のゼロ(0)か全角数字のゼロ(０)の場合は、〇から九までの漢数字の羅列に置換します。</p>
+        <p>　ただし、整数部が千垓の十倍以上の数に相当する25文字以上の数字の場合は、〇から九までの漢数字の羅列に置換します。</p>
+        <br />
+        <p>　ただし、整数部が2文字以上の数字で第1文字目が半角数字のゼロ(0)か全角数字のゼロ(０)の場合は、〇から九までの漢数字の羅列に置換します。</p>
         <br />
         <p>　ただし、1文字だけの半角数字ゼロ(0)や全角数字ゼロ(０)を零に置換します。</p>
         <br />
-        <p>　半角数字と全角数字を漢数字に置換してから、例えば、「零.五」のような、「零.」を「〇．」に更に置換します。</p>
-        <br />
-        <p>　ただし、チェックを外せば、半角数字と全角数字を漢数字に置換しません。</p>
+        <p>　ただし、チェックを外せば、半角数字と全角数字を漢数字に置換しませんし、半角ドット(.)を全角ドット(．)に置換しません。</p>
         <br />
         <br />
         <p>　会話文の、改行の後の半角空白か全角空白の連続と、改行を除去します。</p>
@@ -108,6 +128,22 @@ function $(id) {
 }
 
 
+$("toKanjiNumerals").onclick = function () {
+    if ($("toFullWidthNumerics").checked) {
+        $("toFullWidthNumerics").checked = false;
+    }
+};
+
+
+$("toFullWidthNumerics").onclick = function () {
+    if ($("toKanjiNumerals").checked) {
+        $("toKanjiNumerals").checked = false;
+    }
+};
+
+
+
+
 //正規表現の特殊文字をエスケープ
 function escapeRegExp(string) {
     if (string == null) {
@@ -134,6 +170,8 @@ function escapeRegExp(string) {
 
     return string;
 }
+
+
 
 
 //半角英字を全角英字に置換
@@ -207,6 +245,52 @@ function toFullWidthAlphabet(string) {
 
 
 
+//半角数字を全角数字に置換
+function toFullWidthNumerics(string) {
+    if (string == null) {
+        return string;
+    }
+    if (string == "") {
+        return string;
+    }
+
+    //半角数字を全角数字に置換
+    string = string.replaceAll(/0/g, "０");
+    string = string.replaceAll(/1/g, "１");
+    string = string.replaceAll(/2/g, "２");
+    string = string.replaceAll(/3/g, "３");
+    string = string.replaceAll(/4/g, "４");
+    string = string.replaceAll(/5/g, "５");
+    string = string.replaceAll(/6/g, "６");
+    string = string.replaceAll(/7/g, "７");
+    string = string.replaceAll(/8/g, "８");
+    string = string.replaceAll(/9/g, "９");
+
+    return string;
+}
+
+
+
+
+//半角ドット(.)を全角ドット(．)に置換
+function toFullWidthDot(string) {
+    if (string == null) {
+        return string;
+    }
+    if (string == "") {
+        return string;
+    }
+
+    //半角ドット(.)を全角ドット(．)に置換
+    string = string.replaceAll(/\./g, "．");
+
+    return string;
+}
+
+
+
+
+//半角数字を漢数字ゼロ(〇)から九までの漢数字の羅列に置換
 function toSingleKanjiNumerals(string) {
     if (string == null) {
         return string;
@@ -230,11 +314,13 @@ function toSingleKanjiNumerals(string) {
 }
 
 
-//半角数字と全角数字を漢数字に置換
+//半角数字と全角数字(の整数部)を漢数字に置換
 //
 //ただし、千垓の十倍以上の数に相当する25文字以上の数字の場合は、漢数字ゼロ(〇)から九までの漢数字の羅列に置換
 //
-function toKanjiNumerals(string) {
+//また、2文字以上の数字で第1文字目が半角数字のゼロ(0)の場合も、漢数字ゼロ(〇)から九までの漢数字の羅列に置換
+//
+function toIntegralKanjiNumerals(string) {
     if (string == null) {
         return string;
     }
@@ -277,8 +363,8 @@ function toKanjiNumerals(string) {
 
         var kanjiNumerals = "";
 
-        //千垓の十倍以上の数に相当する25文字以上の数字の場合、
-        //または、
+        //千垓の十倍以上の数に相当する25文字以上の数字の場合
+        //、または、
         //2文字以上の数字で第1文字目が半角数字のゼロ(0)の場合
         //
         if (25 <= numericsLength || (2 <= numericsLength && numerics.startsWith("0"))) {
@@ -337,25 +423,20 @@ function toKanjiNumerals(string) {
             }
         }
 
+        //kanjiNumerals = kanjiNumerals.replaceAll(/^〇[垓京兆億万]/g, "");
+        kanjiNumerals = kanjiNumerals.replaceAll(/〇([垓京兆億万])/g, "$1");
+
         kanjiNumerals = kanjiNumerals.replaceAll(/〇[千百十]/g, "");
-
-        kanjiNumerals = kanjiNumerals.replaceAll(/^〇[垓京兆億万]/g, "");
-
-        kanjiNumerals = kanjiNumerals.replaceAll(/〇垓/g, "垓");
-        kanjiNumerals = kanjiNumerals.replaceAll(/〇京/g, "京");
-        kanjiNumerals = kanjiNumerals.replaceAll(/〇兆/g, "兆");
-        kanjiNumerals = kanjiNumerals.replaceAll(/〇億/g, "億");
-        kanjiNumerals = kanjiNumerals.replaceAll(/〇万/g, "万");
 
         kanjiNumerals = kanjiNumerals.replaceAll(/^〇$/g, "零");
         kanjiNumerals = kanjiNumerals.replaceAll(/〇$/g, "");
+
+        kanjiNumerals = kanjiNumerals.replaceAll(/一([千百十])/g, "$1");
 
         kanjiNumerals = kanjiNumerals.replaceAll(/垓[京兆億万]+/g, "垓");
         kanjiNumerals = kanjiNumerals.replaceAll(/京[兆億万]+/g, "京");
         kanjiNumerals = kanjiNumerals.replaceAll(/兆[億万]+/g, "兆");
         kanjiNumerals = kanjiNumerals.replaceAll(/億万/g, "億");
-
-        kanjiNumerals = kanjiNumerals.replaceAll(/一([千百十])/g, "$1");
 
         kanjiNumeralsArray.push(kanjiNumerals);
     }
@@ -366,6 +447,84 @@ function toKanjiNumerals(string) {
         var kanjiNumerals = kanjiNumeralsArray[index];
 
         string = string.replaceAll(new RegExp(numerics, "g"), kanjiNumerals);
+    }
+
+    return string;
+}
+
+
+
+
+//半角ドット(.)か全角ドット(．)の後の半角数字と全角数字(の小数部)を漢数字ゼロ(〇)から九までの漢数字の羅列に置換
+//
+//半角数字と全角数字(の小数部)の前の半角ドット(.)を全角ドット(．)に置換
+//
+function toFractionalKanjiNumerals(string) {
+    if (string == null) {
+        return string;
+    }
+    if (string == "") {
+        return string;
+    }
+
+    //全角数字を半角数字に置換して、半角数字だけに統一
+    string = string.replaceAll(/０/g, "0");
+    string = string.replaceAll(/１/g, "1");
+    string = string.replaceAll(/２/g, "2");
+    string = string.replaceAll(/３/g, "3");
+    string = string.replaceAll(/４/g, "4");
+    string = string.replaceAll(/５/g, "5");
+    string = string.replaceAll(/６/g, "6");
+    string = string.replaceAll(/７/g, "7");
+    string = string.replaceAll(/８/g, "8");
+    string = string.replaceAll(/９/g, "9");
+
+    //全角ドット(．)を半角ドット(.)に置換して、半角ドット(.)に統一
+    string = string.replaceAll(/．/g, ".");
+
+    //半角ドット(.)と半角数字の1文字以上の連続を抽出
+    var dotAndNumericsArray = string.match(/\.[0-9]+/g);
+
+    //半角ドット(.)と半角数字の1文字以上の連続が無い場合
+    if (dotAndNumericsArray == null) {
+        return string;
+    }
+
+    //置換の重複を予防するため、文字数が大きい数字から小さい数字へ並べます。
+    var compare = function (a, b) {
+        return b.length - a.length;
+    };
+    dotAndNumericsArray.sort(compare);
+
+    //半角ドット(.)を除去して、半角数字の1文字以上の連続だけにします。
+    var numericsArray = [];
+    for (var index = 0; index < dotAndNumericsArray.length; index++) {
+        var dotAndNumerics = dotAndNumericsArray[index];
+
+        var numerics = dotAndNumerics.replace(/^\./, "");
+
+        numericsArray.push(numerics);
+    }
+
+    var kanjiNumeralsArray = [];
+
+    for (var index = 0; index < numericsArray.length; index++) {
+        var numerics = numericsArray[index];
+
+        //〇から九までの漢数字の羅列に置換
+        var kanjiNumerals = "";
+        for (var i = 0; i < numerics.length; i++) {
+            kanjiNumerals = kanjiNumerals + toSingleKanjiNumerals(numerics.charAt(i));
+        }
+        kanjiNumeralsArray.push(kanjiNumerals);
+    }
+
+    for (var index = 0; index < numericsArray.length; index++) {
+        var numerics = numericsArray[index];
+
+        var kanjiNumerals = kanjiNumeralsArray[index];
+
+        string = string.replaceAll(new RegExp("\\." + numerics, "g"), "．" + kanjiNumerals);
     }
 
     return string;
@@ -438,8 +597,30 @@ $("format").onclick = function () {
 
         if ($("toKanjiNumerals").checked) {
 
-            //半角数字と全角数字を漢数字に置換
-            line = toKanjiNumerals(line);
+            //半角ドット(.)か全角ドット(．)の後の半角数字と全角数字(の小数部)を漢数字ゼロ(〇)から九までの漢数字の羅列に置換
+            //
+            //半角数字と全角数字(の小数部)の前の半角ドット(.)を全角ドット(．)に置換
+            //
+            line = toFractionalKanjiNumerals(line);
+
+            //半角数字と全角数字(の整数部)を漢数字に置換
+            //
+            //ただし、千垓の十倍以上の数に相当する25文字以上の数字の場合は、漢数字ゼロ(〇)から九までの漢数字の羅列に置換
+            //
+            //また、2文字以上の数字で第1文字目が半角数字のゼロ(0)の場合も、漢数字ゼロ(〇)から九までの漢数字の羅列に置換
+            //
+            line = toIntegralKanjiNumerals(line);
+
+            //零．を〇．に置換
+            line = line.replaceAll(/零．/g, "〇．");
+
+        } else if ($("toFullWidthNumerics").checked) {
+
+            //半角数字を全角数字に置換
+            line = toFullWidthNumerics(line);
+
+            //半角ドット(.)を全角ドット(．)に置換
+            line = toFullWidthDot(line);
         }
 
 
@@ -480,13 +661,13 @@ $("format").onclick = function () {
     }
 
 
+    //」や』の前の1文字以上の半角空白や全角空白の連続を除去
+    formattingText = formattingText.replaceAll(/[ 　]+([」』])/g, "$1");
+
+
     //。」を」に置換
     //。』を』に置換
     formattingText = formattingText.replaceAll(/。([」』])/g, "$1");
-
-
-    //」や』の前の1文字以上の半角空白や全角空白の連続を除去
-    formattingText = formattingText.replaceAll(/[ 　]+([」』])/g, "$1");
 
 
     //全角の？か全角の！の次が全角空白でも全角の？でも全角の！でも」でも』でも(でも)でも改行でもない場合は全角空白を挿入
@@ -499,10 +680,6 @@ $("format").onclick = function () {
 
     //、改行の後の半角空白や全角空白の連続を除去
     formattingText = formattingText.replaceAll(/(、\n)[ 　]+/g, "$1");
-
-
-    //零.を〇．に置換
-    formattingText = formattingText.replaceAll(/零\./g, "〇．");
 
 
     $("formattedText").value = formattingText;
