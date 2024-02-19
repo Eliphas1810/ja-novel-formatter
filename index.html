@@ -466,6 +466,8 @@ function toIntegralKanjiNumerals(string) {
 //
 //半角数字と全角数字(の小数部)の前の半角ドット(.)を全角ドット(．)に置換
 //
+//半角数字と全角数字の前以外の全角ドット(．)を半角ドット(.)に置換してしまいます。
+//
 function toFractionalKanjiNumerals(string) {
     if (string == null) {
         return string;
@@ -611,6 +613,8 @@ $("format").onclick = function () {
             //
             //半角数字と全角数字(の小数部)の前の半角ドット(.)を全角ドット(．)に置換
             //
+            //半角数字と全角数字の前以外の全角ドット(．)を半角ドット(.)に置換してしまいます。
+            //
             line = toFractionalKanjiNumerals(line);
 
             //半角数字と全角数字(の整数部)を漢数字に置換
@@ -623,6 +627,9 @@ $("format").onclick = function () {
 
             //零．を〇．に置換
             line = line.replaceAll(/零．/g, "〇．");
+
+            //半角ドット(.)を全角ドット(．)に置換
+            line = toFullWidthDot(line);
 
         } else if ($("toFullWidthNumerics").checked) {
 
