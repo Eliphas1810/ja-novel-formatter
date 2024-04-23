@@ -1,6 +1,6 @@
 # ja-novel-formatter
 
-## overview
+## Overview
 
 This application formats texts by the Ja( = Japanese) novel writing rule, converting numeric characters to Kanji Numerals.
 
