@@ -13,6 +13,10 @@
         </div>
         <br />
         <div>
+            <input type="checkbox" id="isBreakLine" checked="checked" />。の後で改行していない場合は改行。
+        </div>
+        <br />
+        <div>
             <input type="checkbox" id="toKanjiNumerals" checked="checked" />半角数字と全角数字を漢数字に置換。半角ドット(.)を全角ドット(．)に置換。
         </div>
         <br />
@@ -548,8 +552,18 @@ $("format").onclick = function () {
 
     var formattingLineArray = [];
 
+
+    if ($("isBreakLine").checked) {
+
+        //。と、ゼロ文字以上の半角空白か全角空白と、改行コードでも半角空白でも全角空白でも)でも）でも※でもない文字が有る場合は、ゼロ文字以上の半角空白か全角空白を除去して、。の後で改行
+        text = text.replaceAll(/。[ 　]*([^\r\n 　\)）※])/g, "。\n$1");
+    }
+
+
+    //改行コードを統一
     text = text.replaceAll(/\r\n/g, "\n");
     text = text.replaceAll(/\r/g, "\n");
+    //統一した改行コードで各行へ分割
     var lineArray = text.split("\n");
     for (var i = 0; i < lineArray.length; i++) {
         var line = lineArray[i];
@@ -561,6 +575,10 @@ $("format").onclick = function () {
 
         //各行の最後が1文字以上の全角空白や半角空白の連続の場合は除去
         line = line.replaceAll(/[　 ]+$/g, "");
+
+
+        //各行の最初の文字が全角空白と「である場合は全角空白を除去
+        line = line.replaceAll(/^　「/g, "「");
 
 
         //各行の最初の文字が全角空白でも「でもない場合は全角空白で字下げ
